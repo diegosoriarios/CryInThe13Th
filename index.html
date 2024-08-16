@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Document</title>
+  <style>
+    body {
+      background-color: black;
+      justify-content: center;
+      align-items: center;
+      display: flex;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+  </style>
+</head>
+<body>
+  <canvas id="canvas"></canvas>
+
+  <script>
+    const canvas = document.getElementById("canvas")
+    const ctx = canvas.getContext("2d");
+
+    const CANVAS_HEIGHT = window.innerHeight / 2
+    const CANVAS_WIDTH = window.innerWidth / 2
+
+    canvas.width = CANVAS_WIDTH
+    canvas.height = CANVAS_HEIGHT
+
+    const hiddenSpots = [
+      {
+        x: 10,
+        y: 10,
+        color: "red",
+        w: 10,
+        h: 10
+      },
+      {
+        x: 103,
+        y: 212,
+        color: "red",
+        w: 10,
+        h: 10
+      },
+      {
+        x: 179,
+        y: 194,
+        color: "red",
+        w: 10,
+        h: 10
+      },
+      {
+        x: 490,
+        y: 401,
+        color: "red",
+        w: 10,
+        h: 10
+      },
+      {
+        x: 435,
+        y: 157,
+        color: "red",
+        w: 10,
+        h: 10
+      },
+      {
+        x: 303,
+        y: 45,
+        color: "red",
+        w: 10,
+        h: 10
+      }
+    ]
+
+    let player = {
+      x: CANVAS_WIDTH / 2,
+      y: 400,
+      w: 10,
+      h: 10,
+      color: "yellow",
+      speed: 10,
+      hide: null,
+      canHide: [false, -1]
+    }
+
+    var img1 = new Image();
+    img1.src = 'assets/house/preview.png';
+    
+
+    function draw() {
+      ctx.fillStyle = "white"
+      ctx.fillRect(0, 0, CANVAS_WIDTH, CANVAS_HEIGHT)
+
+      ctx.drawImage(img1, 0, 0, CANVAS_WIDTH, CANVAS_HEIGHT);
+
+      hiddenSpots.forEach(hiddenSpot => {
+        ctx.fillStyle = hiddenSpot.color
+        ctx.fillRect(hiddenSpot.x, hiddenSpot.y, hiddenSpot.w, hiddenSpot.h)
+      })
+
+      ctx.fillStyle = player.color
+      ctx.fillRect(player.x, player.y, player.w, player.h)
+    }
+
+    function update() {
+      draw()
+
+      hiddenSpots.forEach((hiddenSpot, i) => {
+        if (isColliding(player, hiddenSpot))
+          player.canHide = [true, i]
+        else
+          player.canHide = [false, -1]
+      })
+
+      window.requestAnimationFrame(update);
+    }
+
+    function isColliding(a, b) {
+    return !(
+        ((a.y + a.height) < (b.y)) ||
+        (a.y > (b.y + b.height)) ||
+        ((a.x + a.width) < b.x) ||
+        (a.x > (b.x + b.width))
+    );
+}
+
+    update()
+  </script>
+</body>
+</html>
