@@ -11,10 +11,10 @@ var world = [[]];
 var tileWidth = 32;
 var tileHeight = 32;
 
-var pathStart = [worldWidth - 1, worldHeight - 1];
+var pathStart = [worldWidth / 2, worldHeight /2];
 var pathEnd = [0, 0];
 var currentPath = [];
-var playerHiddenLocation = -1
+var playerHiddenLocation = -1;
 
 let timeouts = [];
 
@@ -478,7 +478,7 @@ function generateEnemy(isEntering = true) {
 }
 
 function cleanHiddingSpots() {
-  hiddingSpots.forEach(hs => hs.hidden = -1)
+  hiddingSpots.forEach((hs) => (hs.hidden = -1));
 }
 
 function move() {
@@ -489,20 +489,20 @@ function move() {
     } else {
       pathStart = currentPath.shift();
     }
-    playerHiddenLocation = isHidden()
+    playerHiddenLocation = isHidden();
     if (playerHiddenLocation !== -1) {
-      hiddingSpots[playerHiddenLocation].occupied = true
+      hiddingSpots[playerHiddenLocation].occupied = true;
     }
   }
 }
 
 function isHidden() {
-  return hiddingSpots.findIndex(hs => {
-    const x = pathStart[0]
-    const y = pathStart[1]
+  return hiddingSpots.findIndex((hs) => {
+    const x = pathStart[0];
+    const y = pathStart[1];
 
-    return hs.pos[0] === x && hs.pos[1] === y
-  })  
+    return hs.pos[0] === x && hs.pos[1] === y;
+  });
 }
 
 function moveEnemy() {
@@ -522,13 +522,7 @@ function moveEnemy() {
 }
 
 function drawEnemy() {
-  ctx.fillStyle = "red";
-  ctx.fillRect(
-    enemy.pathStart[0] * tileWidth,
-    enemy.pathStart[1] * tileHeight,
-    tileWidth,
-    tileHeight
-  );
+  drawPerson(enemy.pathStart[0] * tileWidth, enemy.pathStart[1] * tileHeight, "white")
 }
 
 function moveFriends() {
@@ -565,13 +559,15 @@ function moveFriends() {
       friend.pathStart = path;
 
       if (playerHiddenLocation !== -1) {
-        const hsPos = hiddingSpots[playerHiddenLocation].pos
+        const hsPos = hiddingSpots[playerHiddenLocation].pos;
         if (friend.pathEnd[0] === hsPos[0] && friend.pathEnd[1] === hsPos[1]) {
-          console.log(hiddingSpots)
-          const hiddingSpot = hiddingSpots.filter(hs => hs.occupied === false)[0]
+          console.log(hiddingSpots);
+          const hiddingSpot = hiddingSpots.filter(
+            (hs) => hs.occupied === false
+          )[0];
           friendCurrentPath = findPath(world, path, hiddingSpot.pos);
-          friend.currentPath = friendCurrentPath
-          playerHiddenLocation = -1
+          friend.currentPath = friendCurrentPath;
+          playerHiddenLocation = -1;
           //generateFriend(friend)
         }
       }
@@ -583,13 +579,7 @@ function drawFriends() {
   friends.forEach((friend) => {
     if (!friend.isMoving) return;
     if (!friend.pathStart) return;
-    ctx.fillStyle = friend.color;
-    ctx.fillRect(
-      friend.pathStart[0] * tileWidth,
-      friend.pathStart[1] * tileHeight,
-      tileWidth,
-      tileHeight
-    );
+    drawPerson(friend.pathStart[0] * tileWidth, friend.pathStart[1] * tileHeight, friend.color)
   });
 }
 
@@ -616,22 +606,20 @@ function update() {
   updateDebug();
   if (state === STATES.GAME_OVER) {
     alert("GAME_OVER");
-  }
-  else if (state === STATES.YOU_WIN) {
-    alert("You win")
-  }
-  else if (state === STATES.HIDDING) {
+  } else if (state === STATES.YOU_WIN) {
+    alert("You win");
+  } else if (state === STATES.HIDDING) {
     if (!friends.length) {
-      state = STATES.YOU_WIN
-      return
-    }      
+      state = STATES.YOU_WIN;
+      return;
+    }
     move();
     moveFriends();
 
     tick--;
     if (tick === 10) {
       generateEnemy();
-      enemyTick = 5
+      enemyTick = 5;
     }
     if (tick === 0) {
       tick = 20;
@@ -644,7 +632,7 @@ function update() {
         handleAttack();
       }
       if (enemyTick == 1) {
-        cleanHiddingSpots()
+        cleanHiddingSpots();
         generateFriends();
         console.log(friends);
       }
@@ -671,7 +659,7 @@ function handleAttack() {
   //hiddingSpots = hiddingSpots.filter((_, i) => i != enemy.spot)
   //friends = friends.filter((_, i) => i != enemy.spot)
   if (hiddingSpots[enemy.spot].hidden == -1) {
-    state = STATES.GAME_OVER
+    state = STATES.GAME_OVER;
   } else {
     hiddingSpots.splice(enemy.spot, 1);
     friends.splice(hiddingSpots[enemy.spot].hidden, 1);
@@ -689,20 +677,24 @@ function getRandomInt(min, max) {
 }
 
 function drawPlayer() {
-  ctx.fillStyle = "red";
-  ctx.fillRect(
-    pathStart[0] * tileWidth,
-    pathStart[1] * tileHeight,
-    tileWidth,
-    tileHeight
-  );
-  ctx.fillStyle = "brown";
-  ctx.fillRect(
-    pathEnd[0] * tileWidth,
-    pathEnd[1] * tileHeight,
-    tileWidth,
-    tileHeight
-  );
+  const x = pathStart[0] * tileWidth
+  const y = pathStart[1] * tileHeight
+  drawPerson(x, y, "black")
+  // ctx.strokeStyle = "red";
+  // ctx.rect(
+  //   pathStart[0] * tileWidth,
+  //   pathStart[1] * tileHeight,
+  //   tileWidth,
+  //   tileHeight
+  // );
+  // ctx.stroke()
+  // ctx.fillStyle = "brown";
+  // ctx.fillRect(
+  //   pathEnd[0] * tileWidth,
+  //   pathEnd[1] * tileHeight,
+  //   tileWidth,
+  //   tileHeight
+  // );
   return;
   if (currentPath.length) {
     console.log("Current path length: " + currentPath.length);
@@ -751,4 +743,40 @@ function drawPlayer() {
       tileHeight
     );
   }
+}
+
+function drawPerson(x, y, color) {
+  ctx.strokeStyle = "black"
+  ctx.fillStyle = "black"
+  ctx.beginPath();
+  //HEAD
+  ctx.fillStyle = color
+  ctx.arc(x + tileWidth / 2 - 1, y, 3, 0, Math.PI * 2, true);
+  ctx.stroke()
+  ctx.fill()
+
+  ctx.beginPath();
+  //BODY
+  ctx.moveTo(x + 12, y + 4);
+  ctx.lineTo(x + 8, y + 6);
+  ctx.lineTo(x + 4, y + 18);
+  ctx.lineTo(x + 10, y + 10);
+  ctx.lineTo(x + 10, y + 18);
+  ctx.lineTo(x + 19, y + 18);
+  ctx.lineTo(x + 19, y + 12);
+  ctx.lineTo(x + 24, y + 18);
+  ctx.lineTo(x + 20, y + 6);
+  ctx.lineTo(x + 16, y + 4);
+  
+  //LEGS
+  ctx.fillStyle = "black"
+  ctx.moveTo(x + 10, y + 18)
+  ctx.lineTo(x + 11, y + tileHeight);
+  ctx.lineTo(x + 14, y + 18);
+  ctx.moveTo(x + 15, y + 18)
+  ctx.lineTo(x + 18, y + tileHeight);
+  ctx.lineTo(x + 19, y + 18);
+  ctx.closePath();
+  ctx.stroke();
+  ctx.fill();
 }
