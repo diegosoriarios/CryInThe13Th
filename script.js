@@ -14,6 +14,7 @@ var tileHeight = 32;
 var pathStart = [worldWidth - 1, worldHeight - 1];
 var pathEnd = [0, 0];
 var currentPath = [];
+var playerHiddenLocation = -1
 
 let timeouts = [];
 
@@ -488,7 +489,20 @@ function move() {
     } else {
       pathStart = currentPath.shift();
     }
+    playerHiddenLocation = isHidden()
+    if (playerHiddenLocation !== -1) {
+      hiddingSpots[playerHiddenLocation].occupied = true
+    }
   }
+}
+
+function isHidden() {
+  return hiddingSpots.findIndex(hs => {
+    const x = pathStart[0]
+    const y = pathStart[1]
+
+    return hs.pos[0] === x && hs.pos[1] === y
+  })  
 }
 
 function moveEnemy() {
@@ -520,7 +534,6 @@ function drawEnemy() {
 function moveFriends() {
   friends.forEach((friend, i) => {
     if (friend.isMoving) {
-      console.log("WALKING");
       if (friend.currentPath.length == 1) {
         friend.isMoving = false;
         //friend.pathStart = friend.currentPath[0];
@@ -550,6 +563,18 @@ function moveFriends() {
 
       let path = friend.currentPath.shift();
       friend.pathStart = path;
+
+      if (playerHiddenLocation !== -1) {
+        const hsPos = hiddingSpots[playerHiddenLocation].pos
+        if (friend.pathEnd[0] === hsPos[0] && friend.pathEnd[1] === hsPos[1]) {
+          console.log(hiddingSpots)
+          const hiddingSpot = hiddingSpots.filter(hs => hs.occupied === false)[0]
+          friendCurrentPath = findPath(world, path, hiddingSpot.pos);
+          friend.currentPath = friendCurrentPath
+          playerHiddenLocation = -1
+          //generateFriend(friend)
+        }
+      }
     }
   });
 }
