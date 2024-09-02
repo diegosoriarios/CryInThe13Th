@@ -26,7 +26,7 @@ let enemy = {
   isMoving: false,
   color: "#3a4c64",
   isReturning: false,
-  spot: -1
+  spot: -1,
 };
 
 let friends = [
@@ -58,13 +58,13 @@ let friends = [
     isMoving: false,
     color: "#393124",
   },
-  {
-    pathStart: [],
-    currentPath: [],
-    pathEnd: [],
-    isMoving: false,
-    color: "#d8bed8",
-  },
+  // {
+  //   pathStart: [],
+  //   currentPath: [],
+  //   pathEnd: [],
+  //   isMoving: false,
+  //   color: "#d8bed8",
+  // },
 ];
 
 let hiddingSpots = [
@@ -436,7 +436,7 @@ function generateFriends() {
     const { friendPathStart, friendCurrentPath, hiddingSpot } =
       generateFriend(i);
 
-    console.log("AQUI", friendPathStart)
+    console.log("AQUI", friendPathStart);
 
     friend.pathStart = friendPathStart;
     friend.currentPath = friendCurrentPath;
@@ -446,7 +446,7 @@ function generateFriends() {
 }
 
 function startMovingFriends() {
-  friends.forEach(friend => friend.isMoving = true)
+  friends.forEach((friend) => (friend.isMoving = true));
 }
 
 function generateEnemy(isEntering = true) {
@@ -459,11 +459,12 @@ function generateEnemy(isEntering = true) {
 
     const enemyCurrentPath = findPath(world, enemyPathStart, hiddingSpotPos);
     console.log(enemyCurrentPath);
-    enemy.spot = hiddingSpotIndex
+    enemy.spot = hiddingSpotIndex;
     enemy.currentPath = enemyCurrentPath;
     enemy.pathEnd = hiddingSpotPos;
     enemy.pathStart = enemyPathStart;
     enemy.isMoving = true;
+    enemy.isReturning = !isEntering;
   } else {
     const enemyPathEnd = [7, 0];
 
@@ -473,6 +474,10 @@ function generateEnemy(isEntering = true) {
     enemy.isMoving = true;
     enemy.isReturning = !isEntering;
   }
+}
+
+function cleanHiddingSpots() {
+  hiddingSpots.forEach(hs => hs.hidden = -1)
 }
 
 function move() {
@@ -492,9 +497,9 @@ function moveEnemy() {
       enemy.isMoving = false;
       enemy.pathStart = enemy.currentPath[0];
       if (enemy.isReturning) {
-        state = STATES.HIDDING
-        tick = 20
-        startMovingFriends()
+        state = STATES.HIDDING;
+        tick = 20;
+        startMovingFriends();
       }
     } else {
       enemy.pathStart = enemy.currentPath.shift();
@@ -515,12 +520,17 @@ function drawEnemy() {
 function moveFriends() {
   friends.forEach((friend, i) => {
     if (friend.isMoving) {
-      console.log("WALKING")
+      console.log("WALKING");
       if (friend.currentPath.length == 1) {
         friend.isMoving = false;
-        friend.pathStart = friend.currentPath[0];
+        //friend.pathStart = friend.currentPath[0];
+        friendPathStartX = i + 5;
+        friendPathStartY = 0;
+        friend.pathStart = [friendPathStartX, friendPathStartY];
         const hiddenSpot = hiddingSpots.filter(
-          (hs) => hs.pos[0] === friend.currentPath[0][0] && hs.pos[1] === friend.currentPath[0][1]
+          (hs) =>
+            hs.pos[0] === friend.currentPath[0][0] &&
+            hs.pos[1] === friend.currentPath[0][1]
         );
         if (hiddenSpot && hiddenSpot.length) {
           if (!hiddenSpot[0].taken) {
@@ -564,18 +574,39 @@ var canMoveFriends = false;
 var STATES = {
   HIDDING: "HIDDING",
   TRANSITION: "TRANSITION",
-  ATTACK: "ATTACK"
+  ATTACK: "ATTACK",
+  GAME_OVER: "GAME_OVER",
+  YOU_WIN: "YOU_WIN",
+};
+var state = STATES.HIDDING;
+
+function updateDebug() {
+  const debugDiv = document.getElementById("debug");
+  debugDiv.innerHTML = `TICK: ${tick}`;
+  debugDiv.innerHTML += `\nENEMY CPATH: ${enemy.currentPath.length}`;
+  debugDiv.innerHTML += `\nENEMY TICK: ${enemyTick}`;
 }
-var state = STATES.HIDDING
 
 function update() {
-  if (state === STATES.HIDDING) {
+  updateDebug();
+  if (state === STATES.GAME_OVER) {
+    alert("GAME_OVER");
+  }
+  else if (state === STATES.YOU_WIN) {
+    alert("You win")
+  }
+  else if (state === STATES.HIDDING) {
+    if (!friends.length) {
+      state = STATES.YOU_WIN
+      return
+    }      
     move();
     moveFriends();
 
     tick--;
     if (tick === 10) {
       generateEnemy();
+      enemyTick = 5
     }
     if (tick === 0) {
       tick = 20;
@@ -585,11 +616,12 @@ function update() {
     if (!enemy.isMoving) {
       enemyTick--;
       if (enemyTick == 3) {
-        handleAttack()
+        handleAttack();
       }
       if (enemyTick == 1) {
-        generateFriends()
-        console.log(friends)
+        cleanHiddingSpots()
+        generateFriends();
+        console.log(friends);
       }
       if (enemyTick == 0) {
         generateEnemy(false);
@@ -613,12 +645,16 @@ function handleAttack() {
   //delete hiddingSpots[enemy.spot]
   //hiddingSpots = hiddingSpots.filter((_, i) => i != enemy.spot)
   //friends = friends.filter((_, i) => i != enemy.spot)
-  hiddingSpots.splice(enemy.spot, 1)
-  friends.splice(hiddingSpots[enemy.spot].hidden, 1)
-  hiddingSpots.forEach(hs => {
-    hs.occupied = false
-    hs.taken = false
-  })
+  if (hiddingSpots[enemy.spot].hidden == -1) {
+    state = STATES.GAME_OVER
+  } else {
+    hiddingSpots.splice(enemy.spot, 1);
+    friends.splice(hiddingSpots[enemy.spot].hidden, 1);
+    hiddingSpots.forEach((hs) => {
+      hs.occupied = false;
+      hs.taken = false;
+    });
+  }
 }
 
 function getRandomInt(min, max) {
