@@ -337,16 +337,20 @@ function loaded() {
   createWorld();
 }
 
-function createWorld() {
-  console.log("Creating world...");
-
-  for (var x = 0; x < worldWidth; x++) {
+function clearWorld() {
+  for (var x = 0; x < 16; x++) {
     world[x] = [];
 
-    for (var y = 0; y < worldHeight; y++) {
+    for (var y = 0; y < 16; y++) {
       world[x][y] = 0;
     }
   }
+}
+
+function createWorld() {
+  console.log("Creating world...");
+
+  clearWorld()
 
   generateHiddingSpots();
 
@@ -908,7 +912,7 @@ function update() {
       const TEXT = "No one survived that night";
       const textSize = ctx.measureText(TEXT).width;
       ctx.fillText(TEXT, canvas.width / 2 - textSize / 2, 100);
-      hiddingSpots = []
+      clearWorld()
       hiddingSpots = JSON.parse(JSON.stringify(defaultHiddingSpots))
       friends = JSON.parse(JSON.stringify(defaultFriends))
 
